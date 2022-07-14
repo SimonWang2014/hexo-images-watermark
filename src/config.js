@@ -2,6 +2,7 @@
 
 module.exports = {
     enable: false,
+    mode: 'production',
     imageEnable: false,
     textEnable: false,
     text: 'SpiritLing',

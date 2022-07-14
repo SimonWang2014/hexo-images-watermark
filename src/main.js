@@ -15,7 +15,6 @@ const {
 } = require('./utils/cache');
 const IsEqual = require('./utils/isEqual');
 
-
 async function ImageWatermark() {
     try {
         const hexo = this;
@@ -23,10 +22,12 @@ async function ImageWatermark() {
         const watermarkOptions = hexo.config.watermark || {};
         watermarkOptions.text = watermarkOptions.text || hexo.config.url;
         // If enable is false return
-        if (!watermarkOptions.enable || (!watermarkOptions.imageEnable && !watermarkOptions.textEnable) || (watermarkOptions.imageEnable && watermarkOptions.textEnable)) {
+        if (!watermarkOptions.enable || (!watermarkOptions.imageEnable && !watermarkOptions.textEnable) 
+        || (watermarkOptions.imageEnable && watermarkOptions.textEnable)
+        || this.env.env != watermarkOptions.mode) {
             return;
         }
-        // 合并options
+        
         const options = Object.assign(Object.assign({}, defaultOptions), watermarkOptions);
         if (!Array.isArray(options.directory)) {
             // eslint-disable-next-line
@@ -36,20 +37,26 @@ async function ImageWatermark() {
         const staticTargetFile = ['jpg', 'jpeg', 'png'];
         const dynamicTargetFile = ['gif', 'sl'];
         const routes = route.list();
+        
         let watermarkBuffer;
         // 过滤获取对应的图片
         let staticImgFileMatch;
         if (options.directory.length === 1) {
-            staticImgFileMatch = `${options.directory.join(',')}/**/*.{${staticTargetFile.join(',')}}`;
+            staticImgFileMatch = `/${options.directory.join(',')}/**/*.{${staticTargetFile.join(',')}}`;
         } else {
             staticImgFileMatch = `{${options.directory.join(',')}}/**/*.{${staticTargetFile.join(',')}}`;
         }
+        
         const staticImgFiles = routes.filter((file) => {
+            console.log(file)
             return minimatch(file, staticImgFileMatch, {
                 nocase: true,
-                matchBase: true
+                matchBase: true,
+                partial: true,
             });
         });
+        console.log(staticImgFileMatch);
+        console.log(staticImgFiles);
         // 过滤获取对应的图片
         let dynamicImgFileMatch;
         if (options.directory.length === 1) {
@@ -60,7 +67,8 @@ async function ImageWatermark() {
         const dynamicImgFiles = routes.filter(file => {
             return minimatch(file, dynamicImgFileMatch, {
                 nocase: true,
-                matchBase: true
+                matchBase: true,
+                partial: true,
             });
         });
         // 无论是图片还是文字都全部转为图片再转为buffer，水印图片的buffer
